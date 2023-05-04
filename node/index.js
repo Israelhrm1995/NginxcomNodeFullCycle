@@ -6,28 +6,40 @@ const config = {
     user: 'root',
     password: 'root',
     database: 'nodedb'
-};
+}
 const mysql = require('mysql')
 const connection = mysql.createConnection(config)
 
-const sql = `INSERT INTO people(name) values('Israel')`
-connection.query(sql)
-connection.end()
+connection.connect(function(err) {
+    if (err) throw err;
+    
+    let sql = `CREATE TABLE people (id int primary key auto_increment, name varchar(255))`
+    connection.query(sql, function(err, results, fields){
+        if (err) {
+            console.log(err.message)
+        }
+    })
 
-const retornoPeople = selectPeople();
-
-async function selectPeople(){
-    const connection = mysql.createConnection(config)
-    const [rows] = await connection.query('SELECT * FROM people;');
-    return rows;
-    connection.end()
-}
-
-app.get('/', (req,res) => {
-    res.send('<h1>Full Cycle<h1>')
-    res.send('<h2>'+ retornoPeople +'<h2>')
+    sql = `INSERT INTO people(name) values('IsraelMoura')`
+    connection.query(sql)
 })
 
-app.listen(port, ()=> {
-    console.log('Rodando na porta ' + port)
+app.get('/', (req, res) => {
+    let name = '';
+    connection.query('SELECT name FROM people', (err, result) => {
+        if (err) throw err;
+        let message = `<h1>Full Cycle Rocks!</h1>
+        <p> Lista de nomes cadastrada </p>
+        <ul>`;
+        result.forEach(element => {
+            message += `<li>${element.name}</li>`;
+        });
+        message += '</ul>';
+        res.send(message)
+    }) 
+    connection.end()   
+})
+
+app.listen(port, () => {
+    console.log('Teste de porta ' + port)
 })
